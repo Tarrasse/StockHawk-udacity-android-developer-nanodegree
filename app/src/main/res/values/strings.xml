@@ -37,6 +37,7 @@
     <string name="stocks_list_content_description">list of all stock</string>
     <string name="graph_content_decriptio">graph describe the history the stock</string>
     <string name="error_message_contetn_description">error message</string>
+    <string name="widget_empty_view">there is no stock right now</string>
 
 
 </resources>

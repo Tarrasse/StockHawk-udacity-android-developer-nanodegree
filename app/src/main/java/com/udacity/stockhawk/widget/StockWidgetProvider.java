@@ -42,8 +42,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
             RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.stock_widget);
             rv.setRemoteAdapter(appWidgetId, R.id.stock_widget_list_view, intent);
 
-//            rv.setEmptyView(R.id.stack_view, R.id.empty_view);
-            Timber.d("updating");
+            rv.setEmptyView(R.id.stock_widget_list_view, R.id.widget_empty_view);
             appWidgetManager.updateAppWidget(appWidgetId, rv);
         }
 
