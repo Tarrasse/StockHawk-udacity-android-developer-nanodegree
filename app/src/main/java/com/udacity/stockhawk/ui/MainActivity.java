@@ -1,10 +1,13 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -23,6 +26,8 @@ import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
+
+import java.sql.Time;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,9 +49,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     TextView error;
     private StockAdapter adapter;
 
+    private boolean mIfNewStringAdded = false;
+    private int mNumberOfStrings = 0;
+    private String mLastObjectAdded;
+
     @Override
     public void onClick(String symbol) {
         Timber.d("Symbol clicked: %s", symbol);
+        Intent intent = new Intent(this, DataActivity.class);
+        intent.putExtra(DataActivity.SYMBOL_EXTRA, symbol);
+        startActivity(intent);
     }
 
     @Override
@@ -93,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onRefresh() {
-
+        Timber.d("on refresh");
         QuoteSyncJob.syncImmediately(this);
 
         if (!networkUp() && adapter.getItemCount() == 0) {
@@ -107,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             swipeRefreshLayout.setRefreshing(false);
             error.setText(getString(R.string.error_no_stocks));
             error.setVisibility(View.VISIBLE);
-        } else {
+        } else{
             error.setVisibility(View.GONE);
         }
     }
@@ -121,6 +133,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
             if (networkUp()) {
                 swipeRefreshLayout.setRefreshing(true);
+                mIfNewStringAdded = true;
+                mNumberOfStrings = PrefUtils.getStocks(this).size();
+                mLastObjectAdded = symbol;
             } else {
                 String message = getString(R.string.toast_stock_added_no_connectivity, symbol);
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
@@ -142,9 +157,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         swipeRefreshLayout.setRefreshing(false);
+        Timber.d("load Finish");
 
         if (data.getCount() != 0) {
             error.setVisibility(View.GONE);
+        }else{
+            boolean isNetworkDown = PreferenceManager
+                    .getDefaultSharedPreferences(this)
+                    .getBoolean(QuoteSyncJob.PREF_IS_NETWORK_DOWN, true);
+
+            if(isNetworkDown){
+                error.setText(getString(R.string.error_no_network));
+                error.setVisibility(View.VISIBLE);
+                Timber.d("network down");
+            }
+        }
+        if (mIfNewStringAdded && data.getCount() != mNumberOfStrings + 1){
+            Toast.makeText(this, getString(R.string.toast_stock_invalid, mLastObjectAdded), Toast.LENGTH_LONG).show();
         }
         adapter.setCursor(data);
     }
@@ -186,4 +215,5 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         return super.onOptionsItemSelected(item);
     }
+
 }
