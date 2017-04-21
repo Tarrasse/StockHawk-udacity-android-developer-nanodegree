@@ -10,6 +10,7 @@ import android.widget.RemoteViewsService;
 
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
+import com.udacity.stockhawk.ui.DataActivity;
 
 import timber.log.Timber;
 
@@ -91,6 +92,10 @@ public class StockRemoteViewService extends RemoteViewsService {
                 rv.setTextViewText(R.id.change,  String.valueOf(rawAbsoluteChange));
             }
             rv.setTextViewText(R.id.price, "$"+String.valueOf(price));
+
+            Intent fillInIntent = new Intent();
+            fillInIntent.putExtra(DataActivity.SYMBOL_EXTRA, symbol);
+            rv.setOnClickFillInIntent(R.id.widget_list_item,fillInIntent);
             return rv;
         }
 
