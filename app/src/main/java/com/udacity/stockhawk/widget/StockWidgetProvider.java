@@ -24,9 +24,9 @@ public class StockWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        onUpdate(context,
-                AppWidgetManager.getInstance(context),
-                AppWidgetManager.getInstance(context).getAppWidgetIds(new ComponentName(context, StockWidgetProvider.class)));
+
+        int[] appids = AppWidgetManager.getInstance(context).getAppWidgetIds(new ComponentName(context, StockWidgetProvider.class));
+        AppWidgetManager.getInstance(context).notifyAppWidgetViewDataChanged(appids, R.id.stock_widget_list_view);
 
     }
 
